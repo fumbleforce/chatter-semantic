@@ -1,26 +1,123 @@
+chatter-light-blue = #FAFAFB
+chatter-light-gray = #E6EEF4
+chatter-white = #fff
+chatter-trans-gray = rgba(96,104,110,.8)
+chatter-blue = #2185d0
+
 .chatter
-    display: flex
-    flex-direction: column
-    
+
+    .padded
+        padding: 14px 14px 0
+
+    .wrapper
+        position: absolute
+        height: 100%
+        width: 100%
+        top: 0
+        bottom: 0
+        z-index: -1
+
     .menu
         margin: 0 !important
-    
-    .room
-        overflow:hidden
+
+    .roomList
+        position: absolute
+        width: 100%
+        overflow: hidden
         overflow-y: auto
+        top: 40px
+        bottom: 0
+        background-color: chatter-light-blue !important
+        padding-bottom: 50px;
+        .ui.list .item
+            .ui.avatar.image
+                width: 3em
+                height: 3em
+            .content
+                width: 86%
+                .header, .description
+                    color: #60686e
+                    color: chatter-trans-gray
+                .header
+                    font-size: 1.1em
+                    .meta
+                        display: block
+                        float: right
+                        font-weight: 400
+                        font-size: 0.8em
+                .description
+                    overflow: hidden
+                    text-overflow: ellipsis
+                    white-space: nowrap
+                    padding-top: 8px
+        .ui.celled.list
+            > .item:first-child, > .item:last-child
+                padding-top: 10px
+                padding-bottom: 10px
+
+    .room
+        position: absolute
+        width: 100%
+        overflow: hidden
+        overflow-y: auto
+        top: 40px
+        bottom: 56px
         margin: 0 !important
-        flex:1
-        
+        background-color: chatter-light-blue !important
+
+        &.ui.comments .comment
+            text-align: left
+            >.content
+                max-width: 257px;
+                padding: 5px
+                background-color: chatter-light-gray
+                border-radius: 5px
+                margin-left: 0.6em
+                display: inline-block
+            .avatar
+                width: 2em
+            &.yours
+                text-align: right
+                .author, .date, .content .text
+                    color: white
+
+                >.content
+                    text-align: left
+                    margin-right: 0.6em
+                    margin-left: 0
+                    display: inline-block
+                    background-color: chatter-blue
+                .avatar
+                    float: right
+
+            &:last-of-type
+                margin-bottom: 10px
+
+    .newroom-btn
+        position: absolute
+        bottom: 0
+
     .writer
+        position: absolute
+        width: 100%
+        bottom: 0
         border: none
-        border-top: 2px solid rgba(34, 36, 38, 0.15) !important
-        
+        border-top: 2px solid rgba(34, 36, 38, 0.15)
+
         textarea
             border-radius: 0 !important
             border: none
-    
-.chatter-open
+
+.chatter-open.ui.button
+    font-size: 2.2em
+    padding: 0.4em 0.5em
+    opacity: 1
     position: fixed
-    transform: rotate(-90deg)
-    right: -25px
-    top: 10%
+    bottom: 3%
+    right: 12px
+    box-shadow: 0 6px 13px 0 rgba(0,0,0,.23)
+    border-radius: 100px
+
+    i.icon
+        margin: 0
+        color: #fff

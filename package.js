@@ -8,41 +8,48 @@ Package.describe({
 
 Package.onUse(function(api) {
   api.versionsFrom('1.2.0.2');
-  
+
   api.use([
     'ecmascript',
     'jorgeer:chatter-core@0.1.0'
   ]);
 
   api.imply('jorgeer:chatter-core@0.1.0');
-  
+
   api.addFiles([
-    'client/room.jade',    
-    'client/roomList.jade',
-    'client/users.jade',   
-    'client/writer.jade',  
-    'client/nav.jade',     
-    'client/chatter.jade', 
-    
-    'client/room.js',      
-    'client/roomList.js',  
-    'client/users.js',     
-    'client/writer.js',    
-    'client/nav.js',       
+    'client/ChatterApp.jsx',
+    'client/Task.jsx',
+    'client/chatter.html',
     'client/chatter.js',
-    
+
+    'client/components/Nav.jsx',
+    'client/components/RoomList.jsx',
+    'client/components/Room.jsx',
+    'client/components/Settings.jsx',
+    'client/components/Writer.jsx',
+    'client/components/NewRoom.jsx',
+    'client/components/RoomListItem.jsx',
+    'client/components/Widget.jsx',
+
     'client/styles.styl',
   ], ['client']);
-  
+
+  api.addAssets('public/images/avatar.jpg', 'client');
+  api.addAssets('public/images/default.jpg', 'client');
+
   api.use([
-    'reactive-dict',
-    'templating',
-    'jquery',
     'session',
-    
-    'mquandalle:jade@0.4.5',
+    'react',
+    'templating',
+    'react-template-helper',
+    'react-meteor-data',
+
     'mquandalle:stylus@1.0.10',
   ], 'client');
+
+  api.export([
+    'ChatterApp'
+  ]);
 
 });
 
