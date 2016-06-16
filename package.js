@@ -32,7 +32,7 @@ Package.onUse(function(api) {
     'templating',
     'react-template-helper@0.2.7',
     'react-meteor-data',
-
+    'meteorhacks:subs-manager',
     'mquandalle:stylus@1.0.10',
   ], 'client');
 
@@ -44,7 +44,9 @@ Package.onUse(function(api) {
 
 Package.onTest(function(api) {
   api.use('ecmascript');
-  api.use('tinytest');
+  api.use('practicalmeteor:chai');
   api.use('jorgeer:chatter-semantic');
+  api.use('xolvio:cleaner');
+  api.use('practicalmeteor:sinon');
   api.addFiles('chattersemantic-tests.js');
 });

@@ -11,7 +11,7 @@ const leftIconConfig = {
   },
   settings: {
     icon: "close icon",
-    nextView: "roomList"
+    nextView: "room"
   },
   newRoom: {
     icon: "close icon",
@@ -20,6 +20,10 @@ const leftIconConfig = {
   addUsers: {
     icon: "chevron left icon",
     nextView: "settings"
+  },
+  profile: {
+    icon: "close icon",
+    nextView: "roomList"
   }
 };
 
@@ -31,6 +35,11 @@ const Nav = React.createClass({
   },
 
   render() {
+    const isRoomView = this.props.view == "room";
+    const isRoomListView = this.props.view == "roomList";
+
+    const nextView = isRoomView ? "settings" : "profile" ;
+
 
     const leftIconHTML = (
       <a className="icon item" onClick={() => this.setView()}>
@@ -55,13 +64,14 @@ const Nav = React.createClass({
         <div className="right menu">
           <a
             className="icon item"
-            onClick={()=> this.props.setView("settings")}
+            onClick={()=> this.props.setView(nextView)}
           >
-            {this.props.view == "room" ? settingsIconHTML : null }
+            {isRoomView || isRoomListView ? settingsIconHTML : null }
           </a>
           <a
+            id="chatter-close"
             className="icon item"
-            onClick={() => this.props.setView("minimize")}
+            onClick={() => this.props.toggleChatState()}
           >
             <i className="minus icon"></i>
           </a>

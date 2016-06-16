@@ -1,4 +1,5 @@
 import React from 'react';
+import Loader from "../components/Loader.jsx"
 
 const MainSettings = React.createClass({
 
@@ -19,28 +20,44 @@ const MainSettings = React.createClass({
     });
   },
 
-  componentWillUnmount() {
-    Meteor.call("room.archive", this.props.room._id, this.state.archived);
-  },
-
   toggleArchivedState() {
-    Meteor.call("room.archive", this.props.room._id, !this.state.archived);
+    const params = {
+      archived: !this.state.archived,
+      roomId: this.props.room._id
+    };
+    Meteor.call("room.archive", params);
     this.setState({archived: !this.state.archived});
   },
 
   render() {
-    const roomUsersHTML = this.state.roomUsers.map(function(user) {
+    const user = Meteor.user();
+
+    const addUsersHTML = (
+      <div className="item addUserItem" onClick={ () => this.props.setView("addUsers")}>
+        <i className="add user icon"></i>
+        <div className="content">
+          <a className="header">
+            Add or remove users...
+          </a>
+        </div>
+      </div>
+    );
+
+    const roomUsers = this.state.roomUsers;
+    const roomUsersHTML = roomUsers.map(function(user) {
+      const statusClass = user.profile.online ? "user-status online" : "user-status offline";
       return (
-        <div className="item" key={user._id}>
+        <div className="item room-user" key={user._id}>
+          <div className={statusClass}></div>
           <img
             className="ui avatar image"
-            src="http://localhost:3000/packages/jorgeer_chatter-semantic/public/images/avatar.jpg"
+            src={user.profile.chatterAvatar}
           />
           <div className="content">
-            <a className="header">
-              {user.nickname}
+            <a className="header nickname">
+              {user.profile.chatterNickname}
             </a>
-            <div className="description">
+            <div className="description last-active">
               Last logged in just now.
             </div>
           </div>
@@ -48,16 +65,17 @@ const MainSettings = React.createClass({
       );
     });
 
+
     return (
       <div className="padded settings scrollable">
         <div className="ui header">
           Channel description
         </div>
-        <p>
+        <p className="room-description">
           {this.props.room.description}
         </p>
         <p className="gray-text">
-          This channel was created by {this.props.chatterUser.nickname} on the {this.props.room.createdAt.toISOString()}.
+          This channel was created by {this.props.room.createdBy} on the {this.props.room.createdAt.toISOString()}.
         </p>
         <div className="ui toggle checkbox" onClick={this.toggleArchivedState} >
           <label>
@@ -74,25 +92,18 @@ const MainSettings = React.createClass({
         <p>
           Archived chats will store the conversation and stop notifications from bothering you in the future.
         </p>
-        <div className="ui accordion">
+        <div className="ui accordion room-users">
           <div className="title active">
             <i className="dropdown icon"></i>
             <span className="ui header">
-              Channel members ({this.state.roomUsers.length})
+              Channel members ({roomUsers.length})
             </span>
           </div>
           <div className="content active">
             <div className="ui list relaxed">
-              <div className="item addUserItem" onClick={ () => this.props.setView("addUsers")}>
-                <i className="add user icon"></i>
-                <div className="content">
-                  <a className="header">
-                    Add or remove users...
-                  </a>
-                </div>
-              </div>
+              {user.profile.isChatterAdmin ? addUsersHTML : null}
               <div className="ui divider"></div>
-              {roomUsersHTML}
+              {roomUsers.length > 0 ? roomUsersHTML : <Loader/>}
             </div>
           </div>
         </div>

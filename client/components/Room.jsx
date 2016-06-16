@@ -1,29 +1,37 @@
 import React from 'react';
 
 import Writer from "../components/Writer.jsx"
+import Loader from "../components/Loader.jsx"
 
-const userIdToProfile = function(chatterUsers) {
-  const idToProfile = {};
-  chatterUsers.forEach( (user) => {
-    idToProfile[user._id] = {
-      nickname: user.nickname,
-      avatar: user.avatar
-    };
-  });
-  return idToProfile;
+
+const isFirstMessage = function(prevMsg, currentMsg) {
+  return prevMsg.userId != currentMsg.userId;
 };
+
+const timeSinceLastMsgGreaterThan = function(minutes, prevMsg, currentMsg) {
+  const difference = currentMsg.createdAt - prevMsg.createdAt;
+  const resultInMinutes = Math.round(difference / 60000);
+  return resultInMinutes > minutes;
+};
+
+const timestampShouldBeDisplayed = function(currentMsg, nextMsg) {
+  const veryRecentMessage = currentMsg.getMinutesAgo() <= 60;
+  const recentMessage = currentMsg.getMinutesAgo() <= 1440;
+  return veryRecentMessage && timeSinceLastMsgGreaterThan(2, currentMsg, nextMsg) || recentMessage && timeSinceLastMsgGreaterThan(60, currentMsg, nextMsg);
+}
+
+const roomSubs = new SubsManager();
 
 const Room = React.createClass({
   mixins: [ReactMeteorData],
 
   getMeteorData () {
     const { roomId } = this.props;
-    const messagesHandle = Meteor.subscribe("chatterMessages", {
-      roomId: roomId,
-      messageLimit: Chatter.options.messageLimit
+    const messagesHandle = roomSubs.subscribe("chatterMessages", {
+      roomId: roomId
     });
-
-    const subsReady = messagesHandle.ready();
+    const usersHandle = roomSubs.subscribe("users");
+    const subsReady = messagesHandle.ready() && usersHandle.ready();
 
     let messages = [];
 
@@ -39,11 +47,11 @@ const Room = React.createClass({
 
   componentDidMount() {
     this.scrollDown()
-    Meteor.call("userroom.count.reset", this.props.chatterUser._id, this.props.roomId);
+    Meteor.call("room.counter.reset", this.props.roomId);
   },
 
   componentWillUnmount() {
-    Meteor.call("userroom.count.reset", this.props.chatterUser._id, this.props.roomId);
+    Meteor.call("room.counter.reset", this.props.roomId);
   },
 
   componentWillUpdate() {
@@ -63,53 +71,99 @@ const Room = React.createClass({
   },
 
   pushMessage(text) {
-    const user = Meteor.user();
     const roomId = this.props.roomId;
     const params = {
         message: text,
-        userId: this.props.chatterUser._id,
         roomId
     };
 
-    Meteor.call("message.build", params, function(error, result) {
-      Meteor.call("room.update", roomId);
-      Meteor.call("userroom.count.increase", params.userId, params.roomId);
-    });
-
+    Meteor.call("message.send", params);
     this.scrollDown();
   },
 
+  setUserProfile(userId) {
+    this.props.setUserProfile(userId);
+    this.props.setView("profile");
+  },
+
   render() {
-    const getUserProfile = userIdToProfile(this.props.chatterUsers);
     const loader =  (
-      <div className="ui active inverted dimmer">
-        <div className="ui text loader">
-          Loading messages
-        </div>
-      </div>
+      <Loader/>
     );
 
+    const numberOfMessages = this.data.messages.length;
+
     const messages = (
-      this.data.messages.map((message) => {
-        const userProfile = getUserProfile[message.userId];
-        const messageClass = this.props.chatterUser._id === message.userId ? "comment yours" : "comment";
+      this.data.messages.map((message, index) => {
+
+        let dateBanner = timeAgo = avatar = nickname = null;
+        const prevMsg = this.data.messages[index - 1];
+        const nextMsg = this.data.messages[index + 1];
+
+        const user = Meteor.users.findOne(message.userId);
+
+        const isFirstMessageOfChat = index === 0,
+              isFirstMessageOfDay = index > 0 && prevMsg.getDate() != message.getDate(),
+              isLastMessageChat = index === numberOfMessages - 1;
+
+        // takes care of the display of dates and timestamps
+        if (isFirstMessageOfChat || isFirstMessageOfDay) {
+          dateBanner = (
+            <div className="date-banner">
+              <span> {message.getDate()} </span>
+            </div>
+          );
+        } else if (isLastMessageChat) {
+          if (message.getMinutesAgo() > 1) {
+            timeAgo = (
+              <div className="time-ago">
+                <span> {message.getTimeAgo()} </span>
+              </div>
+            );
+          }
+        } else if (timestampShouldBeDisplayed(message, nextMsg)) {
+          timeAgo = (
+            <div className="time-ago">
+              <span> {message.getTimeAgo()} </span>
+            </div>
+          );
+        } else {
+
+        }
+        // takes care of the display of avatars and nicknames
+        if (index === 0 ) {
+          avatar = user.profile.chatterAvatar;
+          nickname = user.profile.chatterNickname;
+        } else {
+          if (isFirstMessage(this.data.messages[index - 1], message)) {
+            avatar = user.profile.chatterAvatar;
+            nickname = user.profile.chatterNickname;
+          }
+        }
+
+        const ownsMessage = Meteor.userId() === message.userId;
+        const messageClass = ownsMessage ? "chatter-msg comment yours" : "chatter-msg comment";
 
         return (
           <div key={message._id} className={messageClass}>
-            <a className="avatar">
-              <img src={userProfile.avatar} />
-            </a>
-            <div className="content">
-              <a className="author">
-                {userProfile.nickname}
+            {dateBanner}
+            <div className="nickname">
+              {nickname}
+            </div>
+            <div>
+              <a
+                className="avatar"
+                onClick={() => this.setUserProfile(message.userId)}
+              >
+                <img src={avatar} />
               </a>
-              <a className="metadata">
-                <span className="date"> {message.timeAgo()} </span>
-              </a>
-              <div className="text">
-               {message.message}
+              <div className="content">
+                <div className="text">
+                 {message.message}
+                </div>
               </div>
             </div>
+            {timeAgo}
           </div>
         );
       })

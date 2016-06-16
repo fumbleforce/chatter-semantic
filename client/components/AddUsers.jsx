@@ -4,17 +4,22 @@ import ReactDOM from 'react-dom';
 const AddUsers = React.createClass({
   mixins: [ReactMeteorData],
 
-  getMeteorData () {
+  getMeteorData() {
     const { room } = this.props;
     const userRoomHandle = Meteor.subscribe("chatterUserRooms");
+    const userHandle = Meteor.subscribe("users");
 
     const subsReady = userRoomHandle.ready();
 
     let messages = [];
+    let users = [];
 
-    if (subsReady) {
+
+    if (subsReady && userHandle) {
      const roomUsersIds = _.pluck(Chatter.UserRoom.find({"roomId": room._id}).fetch(), "userId");
-     _.each(this.props.chatterUsers, function(user) {
+     users = Meteor.users.find().fetch();
+
+     _.each(users, function(user) {
        if (roomUsersIds.indexOf(user._id) < 0) {
          user.added = false;
        } else {
@@ -24,6 +29,7 @@ const AddUsers = React.createClass({
     }
 
     return {
+      users
     }
   },
 
@@ -42,15 +48,14 @@ const AddUsers = React.createClass({
     const roomId = this.props.room._id;
     const options = {
       add: {
-        command: "userroom.build",
+        command: "room.join",
         params: {
           invitees: [userId],
-          roomId: roomId,
-          name: "name"
+          roomId: roomId
         }
       },
       remove: {
-        command: "userroom.remove",
+        command: "room.leave",
         params: {
           userId: userId,
           roomId: roomId
@@ -61,27 +66,30 @@ const AddUsers = React.createClass({
   },
 
   render() {
-    const users = this.props.chatterUsers.map( user => {
-      if (user.nickname.indexOf(this.state.query) < 0) {return;};
+    const allUsers = this.data.users.map( user => {
+      if (user.profile.chatterNickname.indexOf(this.state.query) < 0) {return;};
       let btnSetup = {
         action: user.added ? "remove" : "add",
         text: user.added ? "Remove" : "Add"
       };
+
       return (
         <div className="item" key={user._id}>
           <div className="right floated content">
             <div
               onClick={() => this.toggleUser(btnSetup.action, user._id)}
-              className="ui button">{btnSetup.text}
+              className="ui button adduser-btn">{btnSetup.text}
             </div>
+          </div>
+          <div className={user.profile.online ? "user-status online" : "user-status offline"}>
           </div>
           <img
             className="ui avatar image"
-            src="http://localhost:3000/packages/jorgeer_chatter-semantic/public/images/avatar.jpg"
+            src={user.profile.chatterAvatar}
           />
           <div className="content">
             <a className="header">
-              {user.nickname}
+              {user.profile.chatterNickname}
             </a>
             <div className="description">
               Last logged in just now.
@@ -107,7 +115,7 @@ const AddUsers = React.createClass({
               </div>
             </div>
             <div className="ui divider"></div>
-            {users}
+            {allUsers}
           </div>
         </div>
         <div className="btn-wrapper">

@@ -1,12 +1,27 @@
-chatter-light-blue = #FAFAFB
-chatter-light-gray = #E6EEF4
+chatter-light-blue = #FBFAFD
+chatter-light-gray = #f1f0f3
 chatter-white = #fff
 chatter-trans-gray = rgba(96,104,110,.8)
-chatter-blue = #2185d0
+chatter-green = #D4F2FC
+chatter-blue = #1b9dfc
+chatter-meta-gray = #ccccd2
+chatter-status-green = #86BB71
+chatter-status-red = #E38968
+
+body
+    background-color: transparent
 
 .chatter
     background-color: chatter-light-blue !important
 
+    .hidden
+        display: none
+    .bold
+        font-weight: 600
+    .success-msg
+        color: chatter-status-green
+    .failure-msg
+        color: chatter-status-red
     p.gray-text
         color: chatter-trans-gray
         font-style: italic
@@ -30,6 +45,20 @@ chatter-blue = #2185d0
             top: 40px
             bottom: 56px
 
+    .user-status
+        position: absolute
+        width: 0.8em
+        height: 0.8em
+        border-radius: 0.8em
+        z-index: 1
+        border: 1px solid chatter-light-blue
+        &.none
+            display: none
+        &.offline
+            background-color: chatter-status-red
+        &.online
+            background-color: chatter-status-green
+
     .ui.divider
         margin: 0.2rem 0rem
 
@@ -48,6 +77,17 @@ chatter-blue = #2185d0
                 width: 100%
 
     .roomList
+        .count
+            color: chatter-trans-gray
+            font-size: 15px
+        .active-rooms
+            padding-bottom: 10px
+        .roomListBtn
+            text-align: center
+            cursor: pointer
+            color: chatter-trans-gray
+            font-size: 10px
+            text-transform: uppercase
         .ui.list .item
             padding-top: 16px
             padding-bottom: 16px
@@ -55,23 +95,44 @@ chatter-blue = #2185d0
                 width: 3em
                 height: 3em
             .content
-                width: 86%
+                width: 85%
                 padding-left: 0.8em
                 .header, .description
-                    color: #60686e
                     color: chatter-trans-gray
                 .header
                     font-size: 1.1em
+                    .roomName
+                        max-width: 60%
+                        overflow: hidden
+                        text-overflow: ellipsis
+                        white-space: nowrap
+                        float: left
                     .meta
                         display: block
                         float: right
                         font-weight: 400
                         font-size: 0.8em
+                        line-height: 20px
                 .description
-                    overflow: hidden
-                    text-overflow: ellipsis
-                    white-space: nowrap
+                    width: 100%
                     padding-top: 8px
+                    .preview
+                        display: inline-block
+                        width: 85%
+                        overflow: hidden
+                        text-overflow: ellipsis
+                        white-space: nowrap
+                    .counter
+                        display: inline-block
+                        width: 15%
+                        text-align: right
+                        font-size: 0.8em
+                        span
+                            border-radius: 1rem
+                            background-color: chatter-blue
+                            color: white
+                            padding: 2px 5px
+
     .btn-wrapper
         position: absolute
         bottom: 0
@@ -81,33 +142,62 @@ chatter-blue = #2185d0
     .room
         margin: 0 !important
 
-        &.ui.comments .comment
-            text-align: left
-            >.content
-                max-width: 257px
-                padding: 5px
-                background-color: chatter-light-gray
-                border-radius: 5px
-                margin-left: 0.6em
-                display: inline-block
-            .avatar
-                width: 2em
-            &.yours
-                text-align: right
-                .author, .date, .content .text
-                    color: white
+        &.ui.comments
+            max-width: 100%
+            .date-banner
+                width: 100%
+                text-align: center
+                font-weight: bold
+                font-size: 0.9em
 
-                >.content
-                    text-align: left
-                    margin-right: 0.6em
-                    margin-left: 0
+            .comment
+                text-align: left
+                margin: 0 0 3px
+                padding: 0
+
+                .nickname
+                    padding-left: 3.6em
+                    line-height: 17px
+                    color: chatter-meta-gray
+                    font-size: 0.85em
+                div .content
+                    max-width: 257px
+                    padding: 5px 10px
+                    background-color: chatter-light-gray
+                    border-radius: 1em
+                    margin-left: 0.6em
                     display: inline-block
-                    background-color: chatter-blue
+                    .text
+                        margin: 0.1em 0em 0.1em
                 .avatar
-                    float: right
+                    cursor: pointer
+                    width: 2em
+                    img
+                        border-radius: 1rem
+                .time-ago
+                    line-height: 17px
+                    color: chatter-meta-gray
+                    font-size: 0.85em
+                    padding-left: 37px
 
-            &:last-of-type
-                margin-bottom: 10px
+                &.yours
+                    text-align: right
+                    .nickname
+                        visibility: hidden
+                    .author, .date, .content .text
+                        color: rgba(0, 0, 0, 0.87)
+
+                     div .content
+                        text-align: left
+                        margin-left: 0
+                        display: inline-block
+                        background-color: chatter-green
+                    .avatar
+                        float: right
+                        display: none
+                    .time-ago
+                        padding-left: 0
+                        padding-right: 13px
     .newRoom
         #multi-select .ui.label img
             height: 1.2em !important
@@ -124,6 +214,8 @@ chatter-blue = #2185d0
             max-height: 250px
             min-height: 41px
             border-size: 2px
+            vertical-align: middle
+            resize: none
 
     .settings
         .ui.list

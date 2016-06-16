@@ -1,7 +1,7 @@
 import React from 'react';
-
-import Nav from "../components/Nav.jsx";
 import router from "./router.jsx";
+import Nav from "../components/Nav.jsx";
+import Widget from "../components/Widget.jsx";
 
 const isChatterUser = function(chatterUsers) {
   const chatterUserIds = chatterUsers.map(function(user) {
@@ -12,8 +12,8 @@ const isChatterUser = function(chatterUsers) {
 
 
 const getChatHTML = function(data) {
-  let chatHTML = <div>Hei Man not useing chatter</div>;
-  if (isChatterUser(data.data.chatterUsers, Meteor.userId())) {
+  let chatHTML = null;
+  if (Meteor.userId()) {
     chatHTML = (
       <div className="ui right vertical wide visible sidebar chatter" id="chatter">
           <Nav
@@ -22,14 +22,18 @@ const getChatHTML = function(data) {
             chatState={data.state.chatState}
             roomId={data.state.roomId}
             header={data.state.header}
+            toggleChatState={data.toggleChatState}
+            setUserProfile={data.setUserProfile}
           />
           <div className="wrapper">
             {router(data, data.state.view).component()}
           </div>
       </div>
     );
-  };
-  return chatHTML;
+    return Session.get("chatOpen") ? chatHTML : <Widget toggleChatState={data.toggleChatState} />;
+  } else {
+    return null;
+  }
 };
 
 export default getChatHTML;

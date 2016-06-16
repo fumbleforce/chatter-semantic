@@ -1,8 +1,17 @@
 import React from 'react';
 
 import RoomListItem from "../components/RoomListItem.jsx";
+import Loader from "../components/Loader.jsx"
 
 const RoomList = React.createClass({
+  getInitialState: function() {
+    return {
+      activeShowing: false,
+      archivedShowing: false,
+      archivedCount: 0,
+      activeCount: 0
+    };
+   },
 
   goToRoom(roomId, roomName) {
     this.props.goToRoom(roomId, roomName);
@@ -14,17 +23,54 @@ const RoomList = React.createClass({
 
   componentDidMount() {
     $('.ui.accordion').accordion();
+    Meteor.call("get.room.counts", (error, response) => {
+      this.setState(response);
+    });
+
+    this.props.setUserProfile(Meteor.userId());
+  },
+
+  loadMoreRooms(type) {
+    const options = {
+      archived: {archivedShowing: true},
+      active: {activeShowing: true}
+    };
+
+    this.setState(options[type]);
+    this.props.loadMoreRooms(type);
+  },
+
+  getMoreRoomsBtn(type) {
+    const roomOpts = {
+      archived: {
+        showing: this.state.archivedShowing,
+        count: this.state.archivedCount
+      },
+      active: {
+        showing: this.state.activeShowing,
+        count: this.state.activeCount
+      }
+    };
+
+    const opts = roomOpts[type];
+
+    if ( (opts.count > Chatter.options.initialRoomLoad) && (!opts.showing)) {
+      return (
+        <div
+          className="roomListBtn"
+          onClick={() => this.loadMoreRooms(type)}
+        >
+          <i className="chevron down icon"></i>
+          <span>Show more</span>
+        </div>
+      );
+    }
+   return null;
   },
 
   render() {
-    const { subsReady, archivedRooms, activeRooms, chatterUser } = this.props;
-    const loaderHTML =  (
-      <div className="ui active inverted dimmer">
-        <div className="ui text loader">
-          Loading messages
-        </div>
-      </div>
-    );
+    const user = Meteor.user();
+    const { subsReady, archivedRooms, activeRooms } = this.props;
 
     const newRoomBtnHTML = (
       <div className="ui fluid button primary newroom-btn" onClick={this.goToNewRoom} >
@@ -32,13 +78,12 @@ const RoomList = React.createClass({
       </div>
     );
 
-    const newRoomBtn = (chatterUser.userType === "admin") ? newRoomBtnHTML : null;
+    const newRoomBtn = (user.profile.isChatterAdmin) ? newRoomBtnHTML : null;
 
     const activeRoomsHTML = activeRooms.map(room => {
       return <RoomListItem
               key={room._id}
               goToRoom={this.goToRoom}
-              chatterUser={chatterUser}
               goToNewRoom={this.goToNewRoom}
               room={room}
             />;
@@ -48,7 +93,6 @@ const RoomList = React.createClass({
       return <RoomListItem
               key={room._id}
               goToRoom={this.goToRoom}
-              chatterUser={chatterUser}
               goToNewRoom={this.goToNewRoom}
               room={room}
             />;
@@ -58,29 +102,31 @@ const RoomList = React.createClass({
       <div>
         <div className="roomList scrollable">
           <div className="padded">
-            <div className="ui accordion">
+            <div className="ui accordion active-rooms">
               <div className="title active">
                 <div className="ui header">
                   <i className="dropdown icon"></i>
-                  Active channels <span>({activeRooms.length})</span>
+                  Active channels <span className="count">({activeRooms.length})</span>
                 </div>
               </div>
               <div className="content active">
                 <div className="ui selection middle aligned list celled">
-                  { subsReady ? activeRoomsHTML : loaderHTML}
+                  {subsReady ? activeRoomsHTML : <Loader/>}
+                  {this.getMoreRoomsBtn("active")}
                 </div>
               </div>
             </div>
-            <div className="ui accordion">
+            <div className="ui accordion archived-rooms">
               <div className="title">
                 <div className="ui header">
                   <i className="dropdown icon"></i>
-                  Archived channels <span>({archivedRooms.length})</span>
+                  Archived channels <span className="count">({archivedRooms.length})</span>
                 </div>
               </div>
               <div className="content">
                 <div className="ui selection middle aligned list celled">
-                  { subsReady ? archivedRoomsHTML : loaderHTML}
+                  {subsReady ? archivedRoomsHTML : <Loader/>}
+                  {this.getMoreRoomsBtn("archived")}
                 </div>
               </div>
             </div>

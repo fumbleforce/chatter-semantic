@@ -5,11 +5,11 @@ const MainNewRoom = React.createClass({
 
   handleSubmit(e) {
     e.preventDefault();
-    const form = {};
-    form.name = ReactDOM.findDOMNode(this.refs.channelName).value.trim();
-    form.description = ReactDOM.findDOMNode(this.refs.channelDescription).value.trim();
-    if (form.name.length === 0) return;
-    Meteor.call("room.build", form, (error, result) => {
+    const params = {};
+    params.name = ReactDOM.findDOMNode(this.refs.channelName).value.trim();
+    params.description = ReactDOM.findDOMNode(this.refs.channelDescription).value.trim();
+    if (params.name.length === 0) return;
+    Meteor.call("room.create", params, (error, result) => {
       Meteor.call("room.get", result, (error, result) => {
         this.props.setRoom(result);
         this.props.setView('addUsers');
@@ -37,14 +37,6 @@ const MainNewRoom = React.createClass({
   },
 
   render() {
-    const users = this.props.chatterUsers.map(function(user) {
-      return (
-        <div className="item" data-value={user._id} key={user._id}>
-           <img className="ui avatar image" src={user.avatar} />
-          <span>{user.nickname}</span>
-        </div>
-      );
-    });
 
     return (
       <div className="newRoom padded scrollable">
@@ -61,7 +53,7 @@ const MainNewRoom = React.createClass({
             </label>
             <input type="text" name="description" placeholder="Enter channel description"  ref="channelDescription"></input>
           </div>
-          <button className="ui button primary" type="submit" >
+          <button className="ui button primary addusers-btn" type="submit" >
             Add users
           </button>
           <div className="ui error message"></div>
