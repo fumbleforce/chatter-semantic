@@ -1,6 +1,14 @@
 import React from 'react';
 
-const roomListItemSubs = new SubsManager();
+import {
+  ROOM_LIST_CACHE_LIMIT,
+  ROOM_LIST_EXPIRE_IN
+} from "../global-variables.js";
+
+const roomListItemSubs = new SubsManager({
+  cacheLimit: ROOM_LIST_CACHE_LIMIT,
+  expireIn: ROOM_LIST_EXPIRE_IN
+});
 
 const RoomListItem = React.createClass({
   mixins: [ReactMeteorData],
@@ -53,7 +61,7 @@ const RoomListItem = React.createClass({
     } = this.props;
 
     const lastUser = this.data.lastUser;
-    let lastAvatar = "http://chatter-widget.meteorapp.com/packages/jorgeer_chatter-semantic/public/images/default.jpg";
+    let lastAvatar = "/packages/jorgeer_chatter-semantic/public/images/default.jpg";
     let statusClass = "user-status none"
 
     if (lastUser) {

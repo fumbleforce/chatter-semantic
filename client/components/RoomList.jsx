@@ -23,7 +23,7 @@ const RoomList = React.createClass({
 
   componentDidMount() {
     $('.ui.accordion').accordion();
-    Meteor.call("get.room.counts", (error, response) => {
+    Meteor.call("get.room.unreadMsgCount", (error, response) => {
       this.setState(response);
     });
 
@@ -81,6 +81,7 @@ const RoomList = React.createClass({
     const newRoomBtn = (user.profile.isChatterAdmin) ? newRoomBtnHTML : null;
 
     const activeRoomsHTML = activeRooms.map(room => {
+      room.archived = false;
       return <RoomListItem
               key={room._id}
               goToRoom={this.goToRoom}
@@ -90,6 +91,7 @@ const RoomList = React.createClass({
     });
 
     const archivedRoomsHTML = archivedRooms.map(room => {
+      room.archived = true;
       return <RoomListItem
               key={room._id}
               goToRoom={this.goToRoom}
